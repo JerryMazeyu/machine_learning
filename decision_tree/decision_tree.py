@@ -146,7 +146,10 @@ class DecisionTree(object):
         print("result is: ", result)
         return result
 
+
     def predict(self, X_test, result):
+        """用拟合的决策树进行预测"""
+        y_hat = None
         for i in range(len(result)):
             nodename = list(result[i].keys())[0]
             cond = list(result[i].values())[0]
@@ -155,11 +158,17 @@ class DecisionTree(object):
                 if X_test[nodename].iloc[0] == j:
                     if isinstance(value, list):
                         print(nodename, value[1], '->', end='')
+                        y_hat = value[1]
                     else:
                         print(nodename, value)
+                        y_hat = value
+        return y_hat
 
 
-
+    def cut_tree(self, result, type='layer', layer=1):
+        """指定层数的伪预剪枝"""
+        if type == 'layer':
+            return result[:layer]
 
 
 
@@ -168,7 +177,7 @@ class DecisionTree(object):
 
 if __name__ == '__main__':
     mapping_list = [{'年龄': {'青年': 0, "中年": 1, "老年": 2}}, {'有工作': {'是': 0, '否': 1}}, {"有自己的房子": {'是': 0, '否': 1}},
-                    {'信贷情况': {'一般': 0, "好": 1, "非常好": 2}}, {'类别(是否个给贷款)': {'是': 0, '否': 1}}]
+                    {'信贷情况': {'一般': 0, "好": 1, "非常好": 2}}, {'类别(是否个给贷款)': {'是': 'A', '否': 'B'}}]
     file_path = 'debt.txt'
     decision_tree = DecisionTree(file_path, mapping_list)
     file = decision_tree.pre_process(verbose=False)
@@ -177,6 +186,8 @@ if __name__ == '__main__':
     # decision_tree._calculate_gain(X_train, y_train, D, verbose=False)
     # decision_tree._calculate_gain_ratio(X_train, y_train, D, verbose=False)
     # output_X, output_y, node_name = decision_tree.decision(X_train, y_train, verbose=True)
-    result = decision_tree.main(X_train, y_train, verbose=False)
+    result = decision_tree.main(X_train, y_train, verbose=True)
     # print(X_test['有工作'].iloc[0])
     decision_tree.predict(X_test, result)
+    cuted_tree = decision_tree.cut_tree(result)
+    decision_tree.predict(X_test, cuted_tree)
